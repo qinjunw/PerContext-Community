@@ -1,0 +1,19 @@
+SenseVoiceSmall model weights
+
+Model name: SenseVoiceSmall
+Model project and source: FunAudioLLM/SenseVoice
+https://github.com/FunAudioLLM/SenseVoice
+
+Android model artifact: sherpa-onnx SenseVoice INT8 2024-07-17
+https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models
+
+Related project: FunASR
+https://github.com/modelscope/FunASR
+
+Authors and attribution: FunAudioLLM and Alibaba Group
+
+License: FunASR Model Open Source License Agreement, Version 1.1
+License source:
+https://github.com/modelscope/FunASR/blob/main/MODEL_LICENSE
+
+This distribution retains the SenseVoiceSmall model name and the source and author information required by the license. The complete Version 1.1 license text is included in the adjacent MODEL_LICENSE file.

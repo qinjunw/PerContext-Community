@@ -1,0 +1,5 @@
+# Copy to signing.local.properties and use a keystore outside source control.
+storeFile=<absolute-keystore-path>
+storePassword=<keystore-password>
+keyAlias=<release-key-alias>
+keyPassword=<key-password>

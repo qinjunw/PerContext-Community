@@ -1,0 +1,61 @@
+# Gradle and Android build output
+.gradle/
+build/
+**/build/
+local.properties
+
+# IDE-local files
+.idea/
+*.iml
+
+# Local agent scratch files
+/.agent-test/
+/nul
+
+# OS-local files
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+
+# Signing and secrets
+*.jks
+*.keystore
+*.key
+*.pem
+*.p12
+*.pfx
+*.der
+*.pk8
+*.pkcs8
+keystore.properties
+secrets.properties
+
+# Local-only configuration and credentials
+.env
+.env.*
+*.env
+!.env.example
+*.local.properties
+*.local.json
+/local-config/
+/dist/
+*.apk
+*.aab
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+credentials*.json
+*_credentials.json
+*api_key*.json
+*API_key*.json
+*_api.json
+*_API.json
+*.secrets.json
+google-services.json
+service-account*.json
+
+# Local ASR benchmark assets (downloaded, never committed)
+/local-models/

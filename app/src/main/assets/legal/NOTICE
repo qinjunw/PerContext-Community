@@ -1,0 +1,21 @@
+PerContext Community
+Copyright 2026 qinjunw and contributors
+
+Original project source is licensed under the Apache License, Version 2.0.
+
+This application uses third-party components, including:
+- AndroidX / Jetpack libraries: https://github.com/androidx/androidx (Apache-2.0)
+- Kotlin and kotlinx libraries: https://github.com/JetBrains/kotlin (Apache-2.0)
+- Ktor: https://github.com/ktorio/ktor (Apache-2.0)
+- OkHttp and Okio: https://github.com/square (Apache-2.0)
+- sherpa-onnx: https://github.com/k2-fsa/sherpa-onnx (Apache-2.0)
+- ONNX Runtime: https://github.com/microsoft/onnxruntime (MIT)
+- Gradle Wrapper: https://github.com/gradle/gradle (Apache-2.0)
+
+SenseVoiceSmall model weights are distributed under the FunASR Model Open
+Source License Agreement, Version 1.1, rather than the project source license.
+The model license and attribution are retained in app/src/main/sensevoice-legal/
+and in the APK's SenseVoice asset directory. The model files are unmodified.
+
+The Apache-2.0 and ONNX Runtime license texts are also included in the APK's
+legal assets. Third-party licenses are not replaced by the project license.
