@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="18%">
+    <bitmap
+        android:src="@drawable/pidan_foreground"
+        android:gravity="fill"
+        android:filter="true" />
+</inset>

@@ -232,8 +232,8 @@ android {
         applicationId = "com.percontext.community"
         minSdk = 23
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.1.0-community"
+        versionCode = 3
+        versionName = "0.1.1-community"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
