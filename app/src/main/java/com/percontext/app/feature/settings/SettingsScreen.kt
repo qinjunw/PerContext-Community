@@ -53,6 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.percontext.app.BuildConfig
 import com.percontext.app.data.provider.SenseVoiceModelContract
+import com.percontext.app.domain.appearance.AppTheme
+import com.percontext.app.domain.appearance.AppearanceSettings
+import com.percontext.app.domain.appearance.ThemeMode
 import com.percontext.app.domain.llm.LlmProviderPreset
 import com.percontext.app.domain.llm.LlmProviderPresets
 import com.percontext.app.ui.theme.CanvasColor
@@ -64,13 +67,18 @@ import com.percontext.app.ui.theme.SurfaceColor
 @Composable
 fun SettingsRoute(
     viewModel: SettingsViewModel,
+    appearanceViewModel: AppearanceViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val appearance by appearanceViewModel.settings.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(viewModel) {
         viewModel.messages.collect(snackbarHostState::showSnackbar)
+    }
+    LaunchedEffect(appearanceViewModel) {
+        appearanceViewModel.messages.collect(snackbarHostState::showSnackbar)
     }
 
     SettingsScreen(
@@ -84,6 +92,9 @@ fun SettingsRoute(
         onSave = viewModel::save,
         onBaseUrlChange = viewModel::updateBaseUrl,
         onModelChange = viewModel::updateModel,
+        appearance = appearance ?: AppearanceSettings(),
+        onSelectTheme = appearanceViewModel::selectTheme,
+        onSelectMode = appearanceViewModel::selectMode,
     )
 }
 
@@ -99,6 +110,9 @@ fun SettingsScreen(
     onSave: () -> Unit,
     onBaseUrlChange: (String) -> Unit = {},
     onModelChange: (String) -> Unit = {},
+    appearance: AppearanceSettings = AppearanceSettings(),
+    onSelectTheme: (AppTheme) -> Unit = {},
+    onSelectMode: (ThemeMode) -> Unit = {},
 ) {
     var legalNoticesOpen by remember { mutableStateOf(false) }
     Scaffold(
@@ -115,6 +129,13 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
             item { SettingsHeader(onBack) }
+            item {
+                AppearanceSettingsCard(
+                    appearance = appearance,
+                    onSelectTheme = onSelectTheme,
+                    onSelectMode = onSelectMode,
+                )
+            }
             item {
                 ProviderSettingsCard(
                     state = state,

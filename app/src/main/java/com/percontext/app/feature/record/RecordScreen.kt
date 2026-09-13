@@ -38,6 +38,8 @@ import com.percontext.app.domain.model.RecordStatus
 import com.percontext.app.domain.model.VoiceRecord
 import com.percontext.app.ui.component.AppHeaderGrid
 import com.percontext.app.ui.component.HeaderSettingsButton
+import com.percontext.app.ui.component.PidanPerch
+import com.percontext.app.domain.recording.RecordingSession
 import com.percontext.app.ui.theme.CanvasColor
 import com.percontext.app.ui.theme.InkColor
 import com.percontext.app.ui.theme.LocalColor
@@ -132,7 +134,7 @@ fun RecordScreen(
                     onStopRecording = onStopRecording,
                 )
             }
-            Spacer(Modifier.height(18.dp))
+            PidanPerch(animate = state.recordingSession !is RecordingSession.Recording)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

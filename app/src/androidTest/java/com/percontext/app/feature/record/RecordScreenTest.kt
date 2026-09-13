@@ -438,7 +438,7 @@ class RecordScreenTest {
 
         composeRule.onNodeWithText("转写失败，录音已保留").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("转写录音").assertIsDisplayed()
-        composeRule.onNodeWithText("原始录音 · 00:01 · --").assertIsDisplayed()
+        composeRule.onNodeWithText("原始录音 · 00:01 · 大小未知").assertIsDisplayed()
     }
 
     @Test
@@ -460,7 +460,7 @@ class RecordScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("文件可能损坏 · 00:01 · --").assertIsDisplayed()
+        composeRule.onNodeWithText("文件可能损坏 · 00:01 · 大小未知").assertIsDisplayed()
     }
 
     private fun record(index: Int) = VoiceRecord(

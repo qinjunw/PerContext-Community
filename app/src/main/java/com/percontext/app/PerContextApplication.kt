@@ -13,6 +13,7 @@ import com.percontext.app.data.repository.RoomDailyContextRepository
 import com.percontext.app.data.repository.RoomDailyContextSourceRepository
 import com.percontext.app.data.repository.RoomTranscriptRepository
 import com.percontext.app.data.repository.RoomVoiceRecordRepository
+import com.percontext.app.data.settings.createAppearanceSettingsRepository
 import com.percontext.app.data.settings.createLlmSettingsRepository
 import com.percontext.app.domain.dailycontext.GenerateDailyContextUseCase
 import com.percontext.app.domain.dailycontext.RequestDailyContextUseCase
@@ -81,6 +82,7 @@ class AppContainer(
     private val dailyContextSourceRepository =
         RoomDailyContextSourceRepository(database.dailyContextSourceDao())
     private val llmSettingsRepository = createLlmSettingsRepository(context)
+    val appearanceSettingsRepository = createAppearanceSettingsRepository(context)
     private val dailyContextScheduler = WorkManagerDailyContextScheduler(context)
     private val generateDailyContextUseCase by lazy {
         GenerateDailyContextUseCase(

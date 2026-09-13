@@ -1,21 +1,27 @@
 package com.percontext.app.feature.review
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,6 +44,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +55,7 @@ import com.percontext.app.domain.dailycontext.DailyContext
 import com.percontext.app.domain.dailycontext.DailyContextStatus
 import com.percontext.app.ui.component.AppHeaderGrid
 import com.percontext.app.ui.component.HeaderSettingsButton
+import com.percontext.app.ui.component.PidanPerch
 import com.percontext.app.ui.theme.CanvasColor
 import com.percontext.app.ui.theme.HairlineColor
 import com.percontext.app.ui.theme.InkColor
@@ -109,31 +118,41 @@ fun ReviewScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { contentPadding ->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 10.dp)
-                .testTag("review_page"),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+                .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 10.dp),
         ) {
-            ReviewHeader(onOpenSettings)
-            CalendarCard(
-                state = state,
-                onPreviousMonth = onPreviousMonth,
-                onNextMonth = onNextMonth,
-                onSelectDay = onSelectDay,
-            )
-            SelectedDayCard(
-                dayKey = state.selectedDayKey,
-                recordings = state.selectedRecordings,
-                transcriptCount = state.selectedTranscriptCount,
-                context = state.selectedContext,
-                onOpenRecordings = { recordingsOpen = true },
-                onOpenContext = { contextOpen = true },
-                onRequestDailyContext = onRequestDailyContext,
-                modifier = Modifier.weight(1f),
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .height(IntrinsicSize.Min)
+                    .testTag("review_page"),
+            ) {
+                ReviewHeader(onOpenSettings)
+                Spacer(Modifier.height(10.dp))
+                CalendarCard(
+                    state = state,
+                    onPreviousMonth = onPreviousMonth,
+                    onNextMonth = onNextMonth,
+                    onSelectDay = onSelectDay,
+                )
+                Spacer(Modifier.height(16.dp))
+                PidanPerch()
+                SelectedDayCard(
+                    dayKey = state.selectedDayKey,
+                    recordings = state.selectedRecordings,
+                    transcriptCount = state.selectedTranscriptCount,
+                    context = state.selectedContext,
+                    onOpenRecordings = { recordingsOpen = true },
+                    onOpenContext = { contextOpen = true },
+                    onRequestDailyContext = onRequestDailyContext,
+                    modifier = Modifier.weight(1f).heightIn(min = 230.dp),
+                )
+            }
         }
     }
 
@@ -191,6 +210,7 @@ private fun CalendarCard(
         shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, HairlineColor),
     ) {
         Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Row(
@@ -259,7 +279,7 @@ private fun CalendarDay(
     val dayNumber = day.cell.day
     Box(
         modifier = modifier
-            .height(38.dp)
+            .heightIn(min = 38.dp)
             .padding(2.dp)
             .clip(RoundedCornerShape(13.dp))
             .then(
@@ -267,14 +287,21 @@ private fun CalendarDay(
                 else if (today) Modifier.border(1.dp, HairlineColor, RoundedCornerShape(13.dp))
                 else Modifier,
             )
-            .then(if (dayNumber != null) Modifier.clickable(onClick = onSelect) else Modifier),
+            .then(
+                if (dayNumber != null) {
+                    Modifier
+                        .clickable(onClick = onSelect)
+                        .semantics { this.selected = selected }
+                        .testTag("review_day_${day.cell.dayKey}")
+                } else Modifier,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (dayNumber != null) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = dayNumber.toString(),
-                    color = if (selected) Color.White else InkColor,
+                    color = if (selected) SurfaceColor else InkColor,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (selected || today) FontWeight.SemiBold else FontWeight.Normal,
                 )
@@ -282,6 +309,13 @@ private fun CalendarDay(
                 Box(
                     modifier = Modifier
                         .size(5.dp)
+                        .then(
+                            if (selected && (day.context?.content != null || day.recordingCount > 0)) {
+                                Modifier.border(1.dp, SurfaceColor, CircleShape)
+                            } else {
+                                Modifier
+                            },
+                        )
                         .background(
                             color = when {
                                 day.context?.content != null -> LocalColor
@@ -323,6 +357,7 @@ private fun SelectedDayCard(
         shape = RoundedCornerShape(26.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, HairlineColor),
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Row(

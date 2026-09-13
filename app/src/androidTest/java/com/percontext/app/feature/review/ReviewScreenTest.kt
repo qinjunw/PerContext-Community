@@ -1,21 +1,47 @@
 package com.percontext.app.feature.review
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import com.percontext.app.domain.appearance.AppTheme
 import com.percontext.app.domain.dailycontext.DailyContext
 import com.percontext.app.domain.dailycontext.DailyContextContent
 import com.percontext.app.domain.dailycontext.DailyContextStatus
 import com.percontext.app.domain.model.TranscriptStatus
 import com.percontext.app.ui.theme.PerContextTheme
 import java.util.Calendar
+import kotlin.math.max
+import kotlin.math.min
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -25,7 +51,7 @@ class ReviewScreenTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun selectedDayOpensReadOnlyRecordingStatusesWithoutMakingPageScrollable() {
+    fun selectedDayOpensReadOnlyRecordingStatuses() {
         val recordings = listOf(
             ReviewRecordingSummary(
                 recordId = "record_2",
@@ -54,8 +80,7 @@ class ReviewScreenTest {
             }
         }
 
-        composeRule.onNodeWithTag("review_page").assert(!hasScrollAction())
-        composeRule.onNodeWithTag("selected_day_recordings").performClick()
+        composeRule.onNodeWithTag("selected_day_recordings").performScrollTo().performClick()
 
         composeRule.onNodeWithTag("day_recordings_dialog").assertIsDisplayed()
         composeRule.onNodeWithText("已转写").assertIsDisplayed()
@@ -64,6 +89,91 @@ class ReviewScreenTest {
 
         composeRule.onNodeWithContentDescription("关闭当天录音").performClick()
         composeRule.onNodeWithTag("day_recordings_dialog").assertDoesNotExist()
+    }
+
+    @Test
+    fun allThemesKeepSelectedDatesReadableAndThePerchLeavesDateActionsAvailable() {
+        val theme = mutableStateOf(AppTheme.SKY)
+        val dark = mutableStateOf(false)
+        var selectedDay: String? = null
+        composeRule.setContent {
+            PerContextTheme(theme = theme.value, darkTheme = dark.value) {
+                ReviewScreen(
+                    state = reviewState(emptyList()),
+                    snackbarHostState = SnackbarHostState(),
+                    onPreviousMonth = {},
+                    onNextMonth = {},
+                    onSelectDay = { selectedDay = it },
+                    onRequestDailyContext = {},
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        AppTheme.entries.forEach { appTheme ->
+            listOf(false, true).forEach { darkTheme ->
+                composeRule.runOnIdle {
+                    theme.value = appTheme
+                    dark.value = darkTheme
+                }
+                val selectedDate = composeRule.onNodeWithTag("review_day_2026-08-27")
+                    .performScrollTo()
+                    .assertIsSelected()
+                val textLayouts = mutableListOf<TextLayoutResult>()
+                composeRule.onNodeWithText("27", useUnmergedTree = true)
+                    .performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
+                        it(textLayouts)
+                    }
+                val textColor = textLayouts.single().layoutInput.style.color
+                val pixels = selectedDate.captureToImage().toPixelMap()
+                val colorCounts = mutableMapOf<Int, Int>()
+                for (y in 0 until pixels.height) {
+                    for (x in 0 until pixels.width) {
+                        val color = pixels[x, y].toArgb()
+                        colorCounts[color] = colorCounts.getOrDefault(color, 0) + 1
+                    }
+                }
+                val background = Color(colorCounts.maxBy { it.value }.key)
+                val contrast = (max(textColor.luminance(), background.luminance()) + 0.05f) /
+                    (min(textColor.luminance(), background.luminance()) + 0.05f)
+                assertTrue("$appTheme dark=$darkTheme selected date contrast=$contrast", contrast >= 4.5f)
+
+                composeRule.onNodeWithTag("review_day_2026-08-28").performClick()
+                composeRule.runOnIdle { assertEquals("2026-08-28", selectedDay) }
+                composeRule.onNodeWithTag("pidan_perch").performScrollTo().assertIsDisplayed()
+                composeRule.onNodeWithTag("selected_day_recordings").performScrollTo().performClick()
+                composeRule.onNodeWithTag("day_recordings_dialog").assertIsDisplayed()
+                composeRule.onNodeWithContentDescription("关闭当天录音").performClick()
+            }
+        }
+    }
+
+    @Test
+    fun compactHeightAndLargeTextKeepGenerateReviewReachable() {
+        var generated = false
+        composeRule.setContent {
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale = 1.6f)) {
+                PerContextTheme(theme = AppTheme.SEA_SALT, darkTheme = true) {
+                    Box(Modifier.width(360.dp).height(480.dp)) {
+                        ReviewScreen(
+                            state = reviewState(emptyList()).copy(selectedTranscriptCount = 1),
+                            snackbarHostState = SnackbarHostState(),
+                            onPreviousMonth = {},
+                            onNextMonth = {},
+                            onSelectDay = {},
+                            onRequestDailyContext = { generated = true },
+                            onOpenSettings = {},
+                        )
+                    }
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("生成回顾").performScrollTo().assertIsDisplayed().performClick()
+        composeRule.runOnIdle { assertTrue(generated) }
+        composeRule.onNodeWithTag("selected_day_recordings").performScrollTo().performClick()
+        composeRule.onNodeWithTag("day_recordings_dialog").assertIsDisplayed()
     }
 
     @Test
@@ -117,7 +227,10 @@ class ReviewScreenTest {
         composeRule.onNodeWithTag("review_context_preview").assertIsDisplayed().performClick()
         composeRule.onNodeWithTag("daily_context_dialog").assertIsDisplayed()
         composeRule.onNodeWithTag("daily_context_dialog_content").assert(hasScrollAction())
-        composeRule.onNodeWithText("第一段。\n\n第二段。").assertIsDisplayed()
+        composeRule.onNode(
+            hasText("第一段。\n\n第二段。") and
+                hasAnyAncestor(hasTestTag("daily_context_dialog_content")),
+        ).assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription("关闭当天回顾").performClick()
         composeRule.onNodeWithTag("daily_context_dialog").assertDoesNotExist()

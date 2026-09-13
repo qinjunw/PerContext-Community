@@ -3,7 +3,8 @@
     <style name="Theme.PerContext" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">#EDF7FF</item>
-        <item name="android:statusBarColor">#EDF7FF</item>
+        <item name="android:navigationBarColor">#E3EEF6</item>
+        <item name="android:statusBarColor">#E3EEF6</item>
+        <item name="android:windowBackground">#E3EEF6</item>
     </style>
 </resources>

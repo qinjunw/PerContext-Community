@@ -13,6 +13,8 @@
 - 使用 DeepSeek 预设，或自填 HTTPS API 地址、模型名称和 API Key，通过 OpenAI 兼容 Chat Completions 接口生成每日回顾。
 - 回顾包含标题、摘要、主题、想法、问题、决定和待办，并保留与当天转写的来源关系。
 - API Key 经 Android Keystore 加密后保存在应用私有存储，离开设置页会清除界面里的明文。
+- 晴空奶白、奶油海盐、雾紫蓝三组主题，可跟随系统或固定日间、夜间，选择自动保存在本机。
+- 记录页和回顾页加入趴睡皮蛋，身体呼吸起伏、轻微点头并间歇摆尾，页面进入后台时暂停。
 
 当前只支持 `arm64-v8a` 设备，最低 Android 6.0（API 23）。这是早期社区版本，自动化检查与设备验证范围见 [验证记录](docs/VERIFICATION.md)。
 
@@ -25,6 +27,8 @@
 3. 点击右上角齿轮进入设置。选择 DeepSeek 预设，或选择「自定义 OpenAI 兼容服务」。
 4. 自定义服务填写 API Base URL、模型名称和 API Key。地址示例为 `https://api.example.com/v1`；模型名称必须使用服务提供方给出的模型 ID。
 5. 保存后打开「回顾」，选择有转写的日期，点击生成当天回顾。
+
+在「设置 → 外观」选择主题与显示模式，选择后自动生效，无需点击模型服务的「保存设置」。默认使用晴空奶白并跟随系统；外观设置与模型服务配置分开保存。
 
 地址会自动补全 `/chat/completions`；也接受以该路径结尾的完整接口地址。当前要求 HTTPS，地址中不能包含账号、查询参数或片段。自定义服务需支持非流式 Chat Completions、`response_format: {"type":"json_object"}`，并返回 `choices[].message.content` 及 `finish_reason: "stop"`。
 

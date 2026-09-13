@@ -7,7 +7,6 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -39,8 +38,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -51,11 +50,9 @@ import com.percontext.app.core.util.formatDuration
 import com.percontext.app.domain.recording.RecordingSession
 import com.percontext.app.ui.theme.AcrylicBackColor
 import com.percontext.app.ui.theme.AcrylicEdgeColor
-import com.percontext.app.ui.theme.HairlineColor
 import com.percontext.app.ui.theme.InkColor
-import com.percontext.app.ui.theme.MutedColor
-import com.percontext.app.ui.theme.RecordColor
 import com.percontext.app.ui.theme.SurfaceColor
+import com.percontext.app.ui.theme.PerContextTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -65,6 +62,7 @@ internal fun RecordingHero(
     onStartRecording: () -> Unit,
     onStopRecording: () -> Unit,
 ) {
+    val colors = PerContextTheme.colors
     var nowMillis by remember(session) { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(session) {
         if (session is RecordingSession.Recording) {
@@ -110,22 +108,40 @@ internal fun RecordingHero(
                     spotColor = AcrylicBackColor,
                 ),
             shape = panelShape,
-            colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+            colors = CardDefaults.cardColors(containerColor = colors.hero),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             border = BorderStroke(1.dp, AcrylicEdgeColor),
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                Image(
-                    painter = painterResource(R.drawable.record_hero_acrylic),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(SurfaceColor.copy(alpha = 0.24f)),
-                )
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawPath(
+                        path = Path().apply {
+                            moveTo(0f, size.height * 0.86f)
+                            cubicTo(
+                                size.width * 0.32f, size.height * 0.82f,
+                                size.width * 0.64f, size.height * 0.60f,
+                                size.width, size.height * 0.60f,
+                            )
+                            lineTo(size.width, size.height)
+                            lineTo(0f, size.height)
+                            close()
+                        },
+                        color = colors.heroWave,
+                    )
+                    drawPath(
+                        path = Path().apply {
+                            moveTo(0f, size.height * 0.82f)
+                            cubicTo(
+                                size.width * 0.34f, size.height * 0.80f,
+                                size.width * 0.72f, size.height * 0.98f,
+                                size.width, size.height,
+                            )
+                            lineTo(0f, size.height)
+                            close()
+                        },
+                        color = colors.heroWaveAlt,
+                    )
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -134,7 +150,7 @@ internal fun RecordingHero(
                 ) {
                     Text(
                         text = formatDuration(elapsedMillis),
-                        color = InkColor,
+                        color = colors.heroInk,
                         fontSize = 50.sp,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 1.sp,
@@ -143,9 +159,13 @@ internal fun RecordingHero(
                     Text(
                         text = session.statusLabel(),
                         color = if (session is RecordingSession.Failed) {
-                            MaterialTheme.colorScheme.error
+                            if (colors.hero == colors.surface) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                colors.heroInk
+                            }
                         } else {
-                            MutedColor
+                            colors.heroMuted
                         },
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
@@ -168,20 +188,22 @@ internal fun RecordingHero(
                                     ambientColor = if (isRecording) {
                                         InkColor.copy(alpha = 0.24f)
                                     } else {
-                                        RecordColor.copy(alpha = 0.34f)
+                                        colors.heroAction.copy(alpha = 0.24f)
                                     },
                                     spotColor = if (isRecording) {
                                         InkColor.copy(alpha = 0.24f)
                                     } else {
-                                        RecordColor.copy(alpha = 0.34f)
+                                        colors.heroAction.copy(alpha = 0.24f)
                                     },
                                 ),
                             enabled = buttonEnabled,
                             shape = CircleShape,
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = if (isRecording) InkColor else RecordColor,
-                                disabledContainerColor = HairlineColor,
+                                containerColor = if (isRecording) InkColor else colors.heroAction,
+                                contentColor = if (isRecording) SurfaceColor else colors.onHeroAction,
+                                disabledContainerColor = colors.disabledSurface,
+                                disabledContentColor = colors.muted,
                             ),
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 0.dp,
@@ -213,6 +235,7 @@ internal fun RecordingHero(
 
 @Composable
 private fun RecordingRipple(inputLevel: Float) {
+    val rippleColor = PerContextTheme.colors.heroAction
     val visibleLevel by animateFloatAsState(
         targetValue = inputLevel.coerceIn(0f, 1f),
         animationSpec = tween(durationMillis = 120),
@@ -240,7 +263,7 @@ private fun RecordingRipple(inputLevel: Float) {
         repeat(3) { index ->
             val wavePhase = (phase + index / 3f) % 1f
             drawCircle(
-                color = RecordColor.copy(
+                color = rippleColor.copy(
                     alpha = (1f - wavePhase) * peakAlpha,
                 ),
                 radius = buttonRadius + travel * wavePhase,

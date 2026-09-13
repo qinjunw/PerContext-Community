@@ -27,15 +27,18 @@ import com.percontext.app.feature.review.ReviewRoute
 import com.percontext.app.feature.review.ReviewViewModel
 import com.percontext.app.feature.settings.SettingsRoute
 import com.percontext.app.feature.settings.SettingsViewModel
+import com.percontext.app.feature.settings.AppearanceViewModel
 import com.percontext.app.ui.theme.CanvasColor
 import com.percontext.app.ui.theme.LocalColor
 import com.percontext.app.ui.theme.MutedColor
+import com.percontext.app.ui.theme.PerContextTheme
 
 @Composable
 fun PerContextApp(
     recordViewModel: RecordViewModel,
     reviewViewModel: ReviewViewModel,
     settingsViewModel: SettingsViewModel,
+    appearanceViewModel: AppearanceViewModel,
     onStartRecording: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(AppTab.RECORD) }
@@ -65,6 +68,7 @@ fun PerContextApp(
             when {
                 settingsOpen -> SettingsRoute(
                     viewModel = settingsViewModel,
+                    appearanceViewModel = appearanceViewModel,
                     onBack = { closeSettings() },
                 )
                 selectedTab == AppTab.RECORD -> RecordRoute(
@@ -125,7 +129,7 @@ private fun AppBottomBar(
 private fun navigationItemColors() = NavigationBarItemDefaults.colors(
     selectedIconColor = LocalColor,
     selectedTextColor = LocalColor,
-    indicatorColor = LocalColor.copy(alpha = 0.12f),
+    indicatorColor = PerContextTheme.colors.accentSurface,
     unselectedIconColor = MutedColor,
     unselectedTextColor = MutedColor,
 )
